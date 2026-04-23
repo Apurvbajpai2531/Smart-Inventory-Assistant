@@ -4,5 +4,8 @@ const controller = require('../controllers/product.controller');
 
 router.get('/', controller.getProducts);
 router.post('/', controller.createProduct);
+router.post('/ask', aiController.ask);
+
+
 
 module.exports = router;
