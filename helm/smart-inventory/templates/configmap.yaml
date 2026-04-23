@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: app-config
+data:
+  DB_HOST: postgres
+  DB_NAME: {{ .Values.postgres.db }}
+  OLLAMA_URL: http://ollama:11434

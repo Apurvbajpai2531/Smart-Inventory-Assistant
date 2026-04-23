@@ -159,3 +159,20 @@ nodeSelector: {}
 tolerations: []
 
 affinity: {}
+
+
+backend:
+  name: backend
+  image: smart-backend:latest
+  replicas: 1
+  nodePort: 30009
+
+postgres:
+  image: postgres:15
+  db: inventorydb
+  user: admin
+  password: admin
+  storage: 1Gi
+
+ollama:
+  image: ollama/ollama

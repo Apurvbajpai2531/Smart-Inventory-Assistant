@@ -1,0 +1,63 @@
+name: CI/CD Smart Inventory
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  build-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      # 🐳 Build Backend
+      - name: Build Backend Image
+        run: |
+          docker build -t smart-backend:latest ./backend
+
+      # 🐳 Build Frontend
+      - name: Build Frontend Image
+        run: |
+          docker build -t smart-frontend:latest ./frontend
+
+      # ☸️ Setup Kind
+      - name: Setup Kind Cluster
+        uses: helm/kind-action@v1.8.0
+
+      # 📦 Load Images
+      - name: Load Images into Kind
+        run: |
+          kind load docker-image smart-backend:latest
+          kind load docker-image smart-frontend:latest
+
+      # 🚀 Deploy
+      - name: Deploy with Helm
+        run: |
+          helm upgrade --install smart-inventory ./helm/smart-inventory
+
+      # 🧪 Verify
+      - name: Verify Deployment
+        run: |
+          kubectl get pods
+
+  notify:
+    needs: build-deploy
+    if: failure()
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Send Email on Failure
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.gmail.com
+          server_port: 465
+          username: ${{ secrets.EMAIL_USERNAME }}
+          password: ${{ secrets.EMAIL_PASSWORD }}
+          subject: "❌ CI/CD Failed - Smart Inventory"
+          to: ${{ secrets.EMAIL_TO }}
+          from: GitHub Actions
+          body: |
+            Build or deployment failed!
+            Check logs: https://github.com/${{ github.repository }}/actions

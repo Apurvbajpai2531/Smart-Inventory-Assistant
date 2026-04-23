@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Smart Inventory Login</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Arial, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background:
+        radial-gradient(circle at top left, rgba(0,198,255,0.35), transparent 30%),
+        radial-gradient(circle at bottom right, rgba(118,75,162,0.40), transparent 30%),
+        linear-gradient(135deg, #0f172a, #1e293b);
+      overflow: hidden;
+    }
+
+    .bg-blur {
+      position: absolute;
+      width: 320px;
+      height: 320px;
+      border-radius: 50%;
+      filter: blur(70px);
+      opacity: 0.55;
+      animation: floatBlob 8s ease-in-out infinite;
+    }
+
+    .bg1 {
+      background: #38bdf8;
+      top: 5%;
+      left: 8%;
+    }
+
+    .bg2 {
+      background: #8b5cf6;
+      bottom: 8%;
+      right: 10%;
+      animation-delay: 1.5s;
+    }
+
+    @keyframes floatBlob {
+      0%,100% { transform: translateY(0px) scale(1); }
+      50% { transform: translateY(-25px) scale(1.08); }
+    }
+
+    .login-card {
+      position: relative;
+      z-index: 2;
+      width: 100%;
+      max-width: 380px;
+      padding: 32px;
+      border-radius: 24px;
+      background: rgba(255,255,255,0.12);
+      backdrop-filter: blur(18px);
+      border: 1px solid rgba(255,255,255,0.18);
+      box-shadow: 0 20px 60px rgba(0,0,0,0.35);
+      color: white;
+      animation: cardEnter 0.6s ease;
+    }
+
+    @keyframes cardEnter {
+      from { opacity: 0; transform: translateY(20px) scale(0.98); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    h1 {
+      margin: 0 0 8px;
+      font-size: 30px;
+      text-align: center;
+    }
+
+    p.sub {
+      margin: 0 0 24px;
+      text-align: center;
+      color: #dbeafe;
+      font-size: 14px;
+    }
+
+    .field {
+      margin-bottom: 14px;
+    }
+
+    .field label {
+      display: block;
+      margin-bottom: 8px;
+      font-size: 14px;
+      color: #e2e8f0;
+    }
+
+    .field input {
+      width: 100%;
+      padding: 14px 16px;
+      border-radius: 14px;
+      border: 1px solid rgba(255,255,255,0.15);
+      background: rgba(255,255,255,0.10);
+      color: white;
+      outline: none;
+      transition: 0.25s ease;
+    }
+
+    .field input::placeholder {
+      color: #cbd5e1;
+    }
+
+    .field input:focus {
+      border-color: #38bdf8;
+      box-shadow: 0 0 0 4px rgba(56,189,248,0.18);
+    }
+
+    .btn {
+      width: 100%;
+      padding: 14px;
+      border: none;
+      border-radius: 14px;
+      background: linear-gradient(90deg, #06b6d4, #3b82f6);
+      color: white;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: transform 0.2s ease, opacity 0.2s ease;
+    }
+
+    .btn:hover {
+      transform: translateY(-2px);
+    }
+
+    .btn:disabled {
+      opacity: 0.7;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .hint {
+      margin-top: 16px;
+      font-size: 13px;
+      color: #cbd5e1;
+      text-align: center;
+    }
+
+    .message {
+      margin-top: 14px;
+      text-align: center;
+      font-size: 14px;
+      min-height: 20px;
+    }
+
+    .error { color: #fca5a5; }
+    .success { color: #86efac; }
+
+    .loader-inline {
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      border: 2px solid rgba(255,255,255,0.4);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      vertical-align: middle;
+      margin-right: 8px;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+  <div class="bg-blur bg1"></div>
+  <div class="bg-blur bg2"></div>
+
+  <div class="login-card">
+    <h1>Smart Inventory</h1>
+    <p class="sub">Secure login to manage products, stock insights, and analytics</p>
+
+    <div class="field">
+      <label>Username</label>
+      <input id="username" type="text" placeholder="Enter username" value="admin" />
+    </div>
+
+    <div class="field">
+      <label>Password</label>
+      <input id="password" type="password" placeholder="Enter password" value="admin123" />
+    </div>
+
+    <button id="loginBtn" class="btn" onclick="login()">Login</button>
+
+    <div id="message" class="message"></div>
+
+    <div class="hint">
+      Demo login: <strong>admin</strong> / <strong>admin123</strong>
+    </div>
+  </div>
+
+  <script>
+    async function login() {
+      const username = document.getElementById('username').value.trim();
+      const password = document.getElementById('password').value.trim();
+      const button = document.getElementById('loginBtn');
+      const message = document.getElementById('message');
+
+      message.className = 'message';
+      message.textContent = '';
+
+      if (!username || !password) {
+        message.classList.add('error');
+        message.textContent = 'Please enter username and password.';
+        return;
+      }
+
+      button.disabled = true;
+      button.innerHTML = '<span class="loader-inline"></span>Signing in...';
+
+      try {
+        const res = await fetch('http://localhost:30009/api/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, password })
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) {
+          throw new Error(data.error || 'Login failed');
+        }
+
+        localStorage.setItem('token', data.token);
+        localStorage.setItem('user', JSON.stringify(data.user));
+
+        message.classList.add('success');
+        message.textContent = 'Login successful. Redirecting...';
+
+        setTimeout(() => {
+          window.location.href = 'index.html';
+        }, 700);
+      } catch (error) {
+        message.classList.add('error');
+        message.textContent = error.message;
+      } finally {
+        button.disabled = false;
+        button.innerHTML = 'Login';
+      }
+    }
+  </script>
+</body>
+</html>
