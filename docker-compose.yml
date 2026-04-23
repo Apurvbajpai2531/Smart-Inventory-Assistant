@@ -1,0 +1,23 @@
+version: "3"
+
+services:
+  frontend:
+    build: ./frontend
+    ports:
+      - "3000:80"
+
+  backend:
+    build: ./backend
+    ports:
+      - "5000:5000"
+    depends_on:
+      - postgres
+
+  postgres:
+    image: postgres
+    environment:
+      POSTGRES_DB: inventorydb
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin
+    volumes:
+      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
