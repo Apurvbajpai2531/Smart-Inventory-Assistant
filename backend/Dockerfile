@@ -8,4 +8,4 @@ RUN npm install
 
 COPY . .
 
-CMD ["node", "src/server.js"]
+CMD ["node","-r","./tracing.js","src/server.js"]

@@ -1,23 +1,109 @@
-version: "3"
+version: "3.0"
 
 services:
   frontend:
     build: ./frontend
+    container_name: smart-frontend
     ports:
-      - "3000:80"
+      - "3002:80"
+    depends_on:
+      - backend
+    networks:
+      - smart-network
 
   backend:
     build: ./backend
+    container_name: smart-backend
     ports:
       - "5000:5000"
     depends_on:
       - postgres
+    networks:
+      - smart-network
 
   postgres:
-    image: postgres
+    image: postgres:15
+    container_name: smart-postgres
+    restart: always
     environment:
       POSTGRES_DB: inventorydb
       POSTGRES_USER: admin
       POSTGRES_PASSWORD: admin
+    ports:
+      - "5433:5432"
     volumes:
+      - postgres-data:/var/lib/postgresql/data
       - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - smart-network
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: smart-grafana
+    ports:
+      - "3001:3000"
+    volumes:
+      - grafana-data:/var/lib/grafana
+    networks:
+      - smart-network
+
+  opensearch:
+    image: opensearchproject/opensearch:2.14.0
+    container_name: smart-opensearch
+    environment:
+      discovery.type: single-node
+      DISABLE_SECURITY_PLUGIN: "true"
+      OPENSEARCH_JAVA_OPTS: "-Xms512m -Xmx512m"
+    ports:
+      - "9200:9200"
+    volumes:
+      - elastic-data:/usr/share/opensearch/data
+    networks:
+      - smart-network
+
+  opensearch-dashboards:
+    image: opensearchproject/opensearch-dashboards:2.14.0
+    container_name: smart-opensearch-dashboards
+    environment:
+      OPENSEARCH_HOSTS: '["http://opensearch:9200"]'
+      DISABLE_SECURITY_DASHBOARDS_PLUGIN: "true"
+    ports:
+      - "5601:5601"
+    depends_on:
+      - opensearch
+    networks:
+      - smart-network
+
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:latest
+    container_name: smart-otel-collector
+    command: ["--config=/etc/otel-collector-config.yml"]
+    volumes:
+      - ./otel-collector-config.yml:/etc/otel-collector-config.yml
+    ports:
+      - "4317:4317"
+      - "4318:4318"
+    networks:
+      - smart-network
+
+  tempo2:
+    image: grafana/tempo:latest
+    container_name: smart-tempo2
+    command: ["-config.file=/etc/tempo.yml"]
+    volumes:
+      - ./tempo.yml:/etc/tempo.yml
+    ports:
+      - "3210:3200"
+      - "4330:4317"
+      - "4331:4318"
+    networks:
+      - smart-network
+
+volumes:
+  postgres-data:
+  grafana-data:
+  elastic-data:
+
+networks:
+  smart-network:
+    driver: bridge
