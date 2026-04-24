@@ -6,6 +6,10 @@
     "start": "node src/server.js"
   },
   "dependencies": {
+    "@opentelemetry/auto-instrumentations-node": "^0.73.0",
+    "@opentelemetry/exporter-trace-otlp-grpc": "^0.215.0",
+    "@opentelemetry/exporter-trace-otlp-http": "^0.215.0",
+    "@opentelemetry/sdk-node": "^0.215.0",
     "axios": "^1.15.2",
     "bcryptjs": "^3.0.3",
     "cors": "^2.8.5",
